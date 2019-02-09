@@ -9,4 +9,5 @@ import com.dangelis.exchangeservice.exception.AppointmentException;
 public interface ExchangeServices {
 
 	public List<Appointment> getAllAppointmentsByEmailByDay(String email,String dateInit,String dateFinal) throws AppointmentException, ParseException;
+	 public Boolean createMeeting(String email,String subjet,String body,String dateIni,String dateFinal);
 }

@@ -12,10 +12,12 @@ import java.util.Date;
 import java.util.List;
 
 import microsoft.exchange.webservices.data.core.response.AttendeeAvailability;
+import microsoft.exchange.webservices.data.core.service.item.Appointment;
+import microsoft.exchange.webservices.data.property.complex.MessageBody;
 import microsoft.exchange.webservices.data.property.complex.availability.CalendarEvent;
 import org.springframework.stereotype.Repository;
 
-import com.dangelis.entity.Appointment;
+
 import com.dangelis.exchangeservice.exception.AppointmentException;
 
 import microsoft.exchange.webservices.data.core.ExchangeService;
@@ -32,11 +34,7 @@ public class ExchangeServiceImpl implements ExchangeServices {
 	
 	private static ExchangeServiceImpl exchangeImpl;
 	private static ExchangeService service;
-	static {
-
-		
-       
-
+	static {       
 		service = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
 		try {
 			System.setProperty("javax.net.ssl.trustStore","C:\\Program Files\\Java\\jdk1.8.0_111\\jre\\lib\\security\\cacerts");
@@ -66,7 +64,7 @@ public class ExchangeServiceImpl implements ExchangeServices {
 
 	
 
-	public List<Appointment> getAllAppointmentsByEmailByDay(String email,String dateIni,String dateFinal) throws AppointmentException, ParseException {
+	public List<com.dangelis.entity.Appointment> getAllAppointmentsByEmailByDay(String email,String dateIni,String dateFinal) throws AppointmentException, ParseException {
 		service = new ExchangeService(ExchangeVersion.Exchange2007_SP1);
 		try {
 			System.setProperty("javax.net.ssl.trustStore","C:\\Program Files\\Java\\jdk1.8.0_111\\jre\\lib\\security\\cacerts");
@@ -77,7 +75,7 @@ public class ExchangeServiceImpl implements ExchangeServices {
 		}
 		ExchangeCredentials credentials = new WebCredentials("dangelis", "", "");
 		service.setCredentials(credentials);
-	    	List<Appointment>list=new ArrayList<Appointment>();
+	    	List<com.dangelis.entity.Appointment>list=new ArrayList<com.dangelis.entity.Appointment>();
 	    	List<AttendeeInfo> attendees = new ArrayList<AttendeeInfo>();
 	    	attendees.add(new AttendeeInfo(email));
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss");
@@ -147,6 +145,36 @@ public class ExchangeServiceImpl implements ExchangeServices {
 	    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
 	}
 
+	
+   public Boolean createMeeting(String email,String subjet,String body,String dateIni,String dateFinal) {
+	// Create the appointment.
+	   Appointment appointment;
+	try {
+		appointment = new  Appointment(service);
+	
+
+	   SimpleDateFormat formatter = new  SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	   Date startDate = formatter.parse(dateIni);
+	   Date endDate = formatter.parse(dateFinal);
+
+	   // Set properties on the appointment. Add two required attendees and one optional attendee.
+	   appointment.setSubject(subjet);
+	   appointment.setBody(new MessageBody(body));
+	   appointment.setStart(startDate);
+	   appointment.setEnd(endDate);
+	   appointment.setLocation(email);
+	   appointment.getRequiredAttendees().add(email);
+	   
+
+	   // Send the meeting request to all attendees and save a copy in the Sent Items folder.
+	   appointment.save();
+	   return true;
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	return false;
+   }
 	
 
 }
